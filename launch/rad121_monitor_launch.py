@@ -5,8 +5,8 @@ def generate_launch_description():
     return LaunchDescription([
         Node(
             package='rad121_monitor',
-            executable='rad121_monitor_node',
-            name='rad121_monitor_node',
+            executable='rad_action_node',
+            name='rad_action_node',
             output='screen'
         )
     ])
