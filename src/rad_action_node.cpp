@@ -12,11 +12,11 @@ public:
     RadActionServer() : Node("rad_action_server")
     {
         rad121_ = std::make_shared<CUSB_RAD121>();
-        if (!rad121_->Open())
-        {
-            RCLCPP_ERROR(this->get_logger(), "Failed to open FTDI device");
-            rclcpp::shutdown();
-        }
+        // if (!rad121_->Open())
+        // {
+        //     RCLCPP_ERROR(this->get_logger(), "Failed to open FTDI device");
+        //     rclcpp::shutdown();
+        // }
         using namespace std::placeholders;
         this->action_server_ = rclcpp_action::create_server<Rad>(
         this,
@@ -53,6 +53,7 @@ std::deque<std::chrono::steady_clock::time_point> countTimestamps;
   {
     RCLCPP_INFO(this->get_logger(), "Received request to cancel goal");
     (void)goal_handle;
+    rad121_->Close();
     return rclcpp_action::CancelResponse::ACCEPT;
   }
 
@@ -65,6 +66,11 @@ std::deque<std::chrono::steady_clock::time_point> countTimestamps;
 
   void execute(const std::shared_ptr<GoalHandleRad> goal_handle)
   {
+    if (!rad121_->Open())
+      {
+          RCLCPP_ERROR(this->get_logger(), "Failed to open FTDI device");
+          rclcpp::shutdown();
+      }
     unsigned char buffer[64];
     rclcpp::Rate loop_rate(8);
     const auto goal = goal_handle->get_goal();
@@ -102,6 +108,7 @@ std::deque<std::chrono::steady_clock::time_point> countTimestamps;
       result->count = current_count / goal->time;
       goal_handle->succeed(result);
       RCLCPP_INFO(this->get_logger(), "Scan finished, final cps average: %ld", result->count);
+      rad121_->Close();
     }
   } // function execute
 
